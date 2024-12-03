@@ -1,4 +1,4 @@
-# E to T: Your Complete Guide to Modern Data Pipelines
+# E to T: Your Introduction Guide to Modern Data Pipelines
 
 This article can also be read on my [Substack](https://laurentarnold.substack.com/p/e-to-t-your-complete-guide-to-modern)
 
