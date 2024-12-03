@@ -1,0 +1,6 @@
+SQLAlchemy==2.0.21
+psycopg2-binary==2.9.9
+pandas==2.2.1
+numpy==1.26.4
+sktime==0.30.1
+pmdarima

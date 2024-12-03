@@ -1,0 +1,18 @@
+
+version: 2
+
+models:
+  - name: mart_races_facts
+    description: "Fact tables for races in the data base. The grain is the race."
+
+  - name: mart_results_facts
+    description: "Fact tables for results in the data base. The grain is the result for each driver in each race"
+
+  - name: mart_drivers_dim
+    description: "Dimension table with drivers informations"
+
+  - name: mart_circuits_dim
+    description: "Dimension table with circuits informations"
+
+  - name: mart_constructors_dim
+    description: "Dimension table with constructors informations"

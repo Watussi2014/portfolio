@@ -1,0 +1,40 @@
+services:
+  postgres:
+    image: postgres:13
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - postgres-db-volume:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+    restart: always
+
+  extract-load:
+    build: .
+    env_file: 
+    - ".env"
+    depends_on:
+      postgres:
+        condition: service_healthy
+  
+  dbt:
+    image: ghcr.io/dbt-labs/dbt-postgres:1.8.2@sha256:95d7bb3a14fc9e1b7122e1389e80c8710c87da7ac57b6ccc1ec4eae3b9bbd2ac
+    volumes:
+      - ./dbt_files:/dbt
+      - ./dbt_files/profiles.yml:/root/.dbt/profiles.yml
+    working_dir: /dbt
+    depends_on:
+      extract-load:
+        condition: service_completed_successfully
+    entrypoint: ["dbt", "build"]
+
+volumes:
+  postgres-db-volume:

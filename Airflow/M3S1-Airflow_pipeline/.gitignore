@@ -1,0 +1,11 @@
+__pycache__/
+.env
+.venv
+.DS_Store
+.dockerignore
+src/temp
+temp
+logs/
+plugins/
+config/
+postgres/

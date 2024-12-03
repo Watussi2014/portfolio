@@ -1,0 +1,177 @@
+
+version: 2
+
+
+models:
+  #"The table are optimized by adjusting the data type of columns eg. bigint to smallint. Changed camel case names to snake case"
+  - name: stg_constructors
+    description: "Optimized constructors table, removed url col"
+    data_tests:
+      - dbt_constraints.primary_key:
+          column_name: "constructor_id"
+  
+  - name: stg_constructor_standings
+    description: "Optimized constructors standings table"
+    data_tests:
+      - dbt_constraints.primary_key:
+          column_name: "constructor_standings_id"
+      - dbt_constraints.foreign_key:
+          fk_column_name: constructor_id
+          pk_table_name: ref('stg_constructors')
+          pk_column_name: constructor_id
+      - dbt_constraints.foreign_key:
+          fk_column_name: race_id
+          pk_table_name: ref('stg_races')
+          pk_column_name: race_id
+
+  - name: stg_constructor_results
+    description: "Optimized constructors results table"
+    data_tests:
+      - dbt_constraints.primary_key:
+          column_name: "constructor_results_id"
+      - dbt_constraints.foreign_key:
+          fk_column_name: constructor_id
+          pk_table_name: ref('stg_constructors')
+          pk_column_name: constructor_id
+      - dbt_constraints.foreign_key:
+          fk_column_name: race_id
+          pk_table_name: ref('stg_races')
+          pk_column_name: race_id
+  - name: stg_races
+    description: "Optimized races table, removed url col"
+    data_tests:
+      - dbt_constraints.primary_key:
+          column_name: "race_id"
+      - dbt_constraints.foreign_key:
+          fk_column_name: circuit_id
+          pk_table_name: ref('stg_circuits')
+          pk_column_name: circuit_id
+    
+  - name: stg_drivers
+    description: "Optimized drivers table, removed url col"
+    data_tests:
+      - dbt_constraints.primary_key:
+          column_name: "driver_id"
+      
+  - name: stg_driver_standings
+    description: "Optimized driver_standing table"
+    data_tests:
+      - dbt_constraints.primary_key:
+          column_name: "driver_standings_id"
+      - dbt_constraints.foreign_key:
+          fk_column_name: race_id
+          pk_table_name: ref('stg_races')
+          pk_column_name: race_id
+      - dbt_constraints.foreign_key:
+          fk_column_name: driver_id
+          pk_table_name: ref('stg_drivers')
+          pk_column_name: driver_id
+
+  - name: stg_circuits
+    description: "Optimized circuit table, removed url col"
+    data_tests:
+      - dbt_constraints.primary_key:
+          column_name: "circuit_id"
+  
+  - name: stg_lap_times
+    description: "Optimized lap_times table"
+    data_tests:
+      - dbt_constraints.foreign_key:
+          fk_column_name: driver_id
+          pk_table_name: ref('stg_drivers')
+          pk_column_name: driver_id
+      - dbt_constraints.foreign_key:
+          fk_column_name: race_id
+          pk_table_name: ref('stg_races')
+          pk_column_name: race_id
+
+  - name: stg_qualifying
+    description: "Optimized qualifying table"
+    data_tests:
+      - dbt_constraints.primary_key:
+          column_name: "qualify_id"
+      - dbt_constraints.foreign_key:
+          fk_column_name: driver_id
+          pk_table_name: ref('stg_drivers')
+          pk_column_name: driver_id
+      - dbt_constraints.foreign_key:
+          fk_column_name: race_id
+          pk_table_name: ref('stg_races')
+          pk_column_name: race_id
+      - dbt_constraints.foreign_key:
+          fk_column_name: constructor_id
+          pk_table_name: ref('stg_constructors')
+          pk_column_name: constructor_id
+
+  - name: stg_pit_stops
+    description: "Optimized pit_stops table"
+    data_tests:
+      - dbt_constraints.foreign_key:
+          fk_column_name: driver_id
+          pk_table_name: ref('stg_drivers')
+          pk_column_name: driver_id
+      - dbt_constraints.foreign_key:
+          fk_column_name: race_id
+          pk_table_name: ref('stg_races')
+          pk_column_name: race_id
+
+  - name: stg_results
+    description: "Optimized results table"
+    data_tests:
+      - dbt_constraints.primary_key:
+          column_name: "result_id"
+      - dbt_constraints.foreign_key:
+          fk_column_name: driver_id
+          pk_table_name: ref('stg_drivers')
+          pk_column_name: driver_id
+      - dbt_constraints.foreign_key:
+          fk_column_name: race_id
+          pk_table_name: ref('stg_races')
+          pk_column_name: race_id
+      - dbt_constraints.foreign_key:
+          fk_column_name: constructor_id
+          pk_table_name: ref('stg_constructors')
+          pk_column_name: constructor_id
+
+  - name: stg_sprint_results
+    description: "Optimized sprint_results table"
+    data_tests:
+      - dbt_constraints.foreign_key:
+          fk_column_name: result_id
+          pk_table_name: ref('stg_results')
+          pk_column_name: result_id
+      - dbt_constraints.foreign_key:
+          fk_column_name: driver_id
+          pk_table_name: ref('stg_drivers')
+          pk_column_name: driver_id
+      - dbt_constraints.foreign_key:
+          fk_column_name: race_id
+          pk_table_name: ref('stg_races')
+          pk_column_name: race_id
+      - dbt_constraints.foreign_key:
+          fk_column_name: constructor_id
+          pk_table_name: ref('stg_constructors')
+          pk_column_name: constructor_id
+
+
+
+sources:
+  - name: raw
+    tables:
+      - name: circuits
+      - name: constructor_results
+      - name: constructor_standings
+      - name: constructors
+      - name: driver_standings
+      - name: drivers
+      - name: lap_times
+      - name: pit_stops
+      - name: qualifying
+      - name: races
+      - name: results
+      - name: seasons
+      - name: sprint_results
+      - name: status
+
+
+

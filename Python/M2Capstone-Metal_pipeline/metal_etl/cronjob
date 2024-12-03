@@ -1,0 +1,2 @@
+# Scheduling a cronjob to fetch the data every hours
+0 * * * * /app/script/cron_start.sh >> /var/log/cron.log 2>&1

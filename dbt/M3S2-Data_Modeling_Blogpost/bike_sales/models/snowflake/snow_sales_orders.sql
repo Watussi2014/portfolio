@@ -1,0 +1,17 @@
+select salesorderid,
+        createdby,
+        createdat,
+        changedby,
+        changedat,
+        fiscvariant,
+        fiscalyearperiod,
+        partnerid,
+        salesorg,
+        currency,
+        grossamount,
+        netamount,
+        taxamount,
+        lifecyclestatus,
+        billingstatus,
+        deliverystatus
+from {{ ref('stg_sales_orders') }}

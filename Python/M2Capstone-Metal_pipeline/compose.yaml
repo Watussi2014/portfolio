@@ -1,0 +1,27 @@
+services:
+
+  db:
+    image: postgres:16-alpine3.20
+    restart: always
+    # set shared memory limit when using docker-compose
+    shm_size: 128mb
+    ports: 
+      - 5432:5432
+    volumes:
+      - db-data:/var/postgres-data
+    env_file: ".env"
+    
+  etl-script:
+    image: watussi/tc-metal-etl:latest
+    env_file: ".env"
+    restart: always
+
+  backup-script:
+    image: watussi/tc-metal-pipeline:latest
+    env_file: ".env"
+    volumes:
+      - ./backups:/Users/arnoldlaurent/app/backups
+    restart: always
+  
+volumes:
+  db-data:

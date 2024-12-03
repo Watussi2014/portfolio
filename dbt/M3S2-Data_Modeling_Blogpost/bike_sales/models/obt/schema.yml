@@ -1,0 +1,35 @@
+version: 2
+
+models:
+
+  - name: obt_products
+    description: "Product table"
+    data_tests:
+        - dbt_constraints.primary_key:
+            column_name: "productid"
+        - dbt_constraints.foreign_key:
+            fk_column_name: createdby
+            pk_table_name: ref('obt_employees')
+            pk_column_name: employeeid
+        - dbt_constraints.foreign_key:
+            fk_column_name: changedby
+            pk_table_name: ref('obt_employees')
+            pk_column_name: employeeid
+    
+  - name: obt_employees
+    description: "Employee table"
+    data_tests:
+      - dbt_constraints.primary_key:
+          column_name: "employeeid"
+
+  - name: obt_sales_orders
+    description: "Sales order table"
+    data_tests:
+      - dbt_constraints.foreign_key:
+          fk_column_name: createdby
+          pk_table_name: ref('obt_employees')
+          pk_column_name: employeeid
+      - dbt_constraints.foreign_key:
+          fk_column_name: changedby
+          pk_table_name: ref('obt_employees')
+          pk_column_name: employeeid

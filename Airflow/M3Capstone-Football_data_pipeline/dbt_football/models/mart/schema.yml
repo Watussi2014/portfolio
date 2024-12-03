@@ -1,0 +1,17 @@
+
+version: 2
+
+
+models:
+  - name: clean_data
+    description: "Changed some data types"
+    columns:
+      - name: id
+        data_tests:
+          - not_null
+          - unique
+
+sources:
+  - name: raw
+    tables:
+      - name: matches_data

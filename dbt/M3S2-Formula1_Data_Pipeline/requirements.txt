@@ -1,0 +1,6 @@
+apache-airflow==2.10.0
+kaggle==1.6.17
+loguru==0.7.2
+pandas==2.1.4
+SQLAlchemy>=1.4.36
+psycopg2-binary==2.9.9

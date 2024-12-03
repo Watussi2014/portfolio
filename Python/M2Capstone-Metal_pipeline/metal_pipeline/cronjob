@@ -1,0 +1,2 @@
+# Scheduling a cronjob to backup the data every 6 hours
+0 */6 * * * /usr/local/bin/python /app/script/backup_script.py >> /var/log/cron.log 2>&1

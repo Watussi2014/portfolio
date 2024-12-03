@@ -1,0 +1,84 @@
+version: 2
+
+models:
+  - name: star_addresses
+    description: "Addresses dimensions"
+    data_tests:
+      - dbt_constraints.primary_key:
+          column_name: addressid
+  
+  - name: star_products
+    description: "Product table"
+    data_tests:
+      - dbt_constraints.primary_key:
+          column_name: "productid"
+      - dbt_constraints.foreign_key:
+          fk_column_name: createdby
+          pk_table_name: ref('star_employees')
+          pk_column_name: employeeid
+      - dbt_constraints.foreign_key:
+          fk_column_name: changedby
+          pk_table_name: ref('star_employees')
+          pk_column_name: employeeid
+      - dbt_constraints.foreign_key:
+          fk_column_name: supplier_partnerid
+          pk_table_name: ref('star_business_partners')
+          pk_column_name: partnerid 
+
+  - name: star_employees
+    description: "Employee table"
+    data_tests:
+      - dbt_constraints.primary_key:
+          column_name: "employeeid"
+      - dbt_constraints.foreign_key:
+          fk_column_name: addressid
+          pk_table_name: ref('star_addresses')
+          pk_column_name: addressid
+    
+  - name: star_business_partners
+    description: "Business partners table"
+    data_tests:
+      - dbt_constraints.primary_key:
+          column_name: "partnerid"
+      - dbt_constraints.foreign_key:
+          fk_column_name: addressid
+          pk_table_name: ref('star_addresses')
+          pk_column_name: addressid
+      - dbt_constraints.foreign_key:
+          fk_column_name: createdby
+          pk_table_name: ref('star_employees')
+          pk_column_name: employeeid
+      - dbt_constraints.foreign_key:
+          fk_column_name: changedby
+          pk_table_name: ref('star_employees')
+          pk_column_name: employeeid
+    
+  - name: star_sales_orders
+    description: "Sales order table"
+    data_tests:
+      - dbt_constraints.primary_key:
+          column_name: "salesorderid"
+      - dbt_constraints.foreign_key:
+          fk_column_name: createdby
+          pk_table_name: ref('star_employees')
+          pk_column_name: employeeid
+      - dbt_constraints.foreign_key:
+          fk_column_name: changedby
+          pk_table_name: ref('star_employees')
+          pk_column_name: employeeid
+      - dbt_constraints.foreign_key:
+          fk_column_name: partnerid
+          pk_table_name: ref('star_business_partners')
+          pk_column_name: partnerid 
+    
+  - name: star_sales_order_items
+    description: "Sales order items table"
+    data_tests:
+      - dbt_constraints.foreign_key:
+          fk_column_name: salesorderid
+          pk_table_name: ref('star_sales_orders')
+          pk_column_name: salesorderid
+      - dbt_constraints.foreign_key:
+          fk_column_name: productid
+          pk_table_name: ref('star_products')
+          pk_column_name: productid

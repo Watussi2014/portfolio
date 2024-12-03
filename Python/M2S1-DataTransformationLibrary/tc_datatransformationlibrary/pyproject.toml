@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "tc_datatransformationlibrary"
+version = "0.1"
+description = "Data Transformation library for Turring College M2S1 Project"
+authors = ["Arnold Laurent <laurent.arnold97@gmail.com>"]
+license = "/"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+numpy = "^1.26.4"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,14 @@
+version: 2
+
+sources:
+  - name: raw
+    tables:
+      - name: Addresses
+      - name: BusinessPartners
+      - name: Employees
+      - name: ProductCategories
+      - name: ProductCategoryText
+      - name: ProductTexts
+      - name: Products
+      - name: SalesOrderItems
+      - name: SalesOrders

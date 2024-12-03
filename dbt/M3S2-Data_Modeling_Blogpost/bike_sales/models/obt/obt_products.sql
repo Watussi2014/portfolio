@@ -1,0 +1,25 @@
+select p.*,
+        b.partner_description,
+        b.emailaddress,
+        b.phonenumber,
+        b.faxnumber,
+        b.webaddress,
+        b.companyname,
+        b.legalform,
+        b.currency as partner_currency,
+        b.city as partner_city,
+        b.postalcode,
+        b.street,
+        b.building,
+        b.address_typename,
+        b.country_code,
+        b.country_name,
+        b.region_code,
+        b.region_name,
+        b.validity_startdate,
+        b.validity_enddate,
+        b.latitude,
+        b.longitude
+from {{ ref('star_products') }} p
+left join {{ ref('obt_business_partners') }} b 
+    on p.supplier_partnerid = b.partnerid

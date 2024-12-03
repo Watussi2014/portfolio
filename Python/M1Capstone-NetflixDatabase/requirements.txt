@@ -1,0 +1,5 @@
+maskpass==0.3.7
+pandas==2.2.2
+rich==13.7.1
+simple_term_menu==1.6.4
+SQLAlchemy==2.0.21
