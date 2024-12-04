@@ -1,3 +1,14 @@
+The goal of this project was to reinforce what I learned during the module by teaching it to someone else.
+
+
+
+I chose the topic of data pipeline because I felt those are the main pieces of a good data infrastructure.
+
+
+
+Here you can read the article below and find the source code for the examples.
+
+
 # E to T: Your Introduction Guide to Modern Data Pipelines
 
 This article can also be read on my [Substack](https://laurentarnold.substack.com/p/e-to-t-your-complete-guide-to-modern)
