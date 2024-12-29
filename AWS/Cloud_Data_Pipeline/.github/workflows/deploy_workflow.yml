@@ -1,0 +1,147 @@
+name: Deploy terraform infrastructure, restore the DB and create analytics reports.
+
+on:
+  push:
+    branches: [ "main" ]
+
+
+env:
+  AWS_REGION: eu-west-3
+  RESTORE_REPOSITORY: database-restore
+  ANALYTICS_REPOSITORY: database-analytics
+  TERRAFORM_WORKING_DIR: './terraform_config'
+  STATE_BUCKET: 'turring-terraform-tfstate'
+
+jobs:
+  deploy-ecr:
+    name: Deploy ECR repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        working-directory: ${{ env.TERRAFORM_WORKING_DIR }}
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ env.STATE_BUCKET }}" \
+            -backend-config="region=${{ env.AWS_REGION }}"
+
+      - name: Terraform apply ECR only
+        working-directory: ${{ env.TERRAFORM_WORKING_DIR }}
+        run: |
+          terraform apply -auto-approve -target=aws_ecr_repository.db_restore \
+                                      -target=aws_ecr_repository.db_analytics
+    
+  build-and-push:
+    name: Build and push container
+    needs: deploy-ecr
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push restore container
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker build -t $ECR_REGISTRY/${{ env.RESTORE_REPOSITORY }}:latest -f db_restore/Dockerfile db_restore
+          docker push $ECR_REGISTRY/${{ env.RESTORE_REPOSITORY }}:latest
+      
+      - name: Build and push analytics container
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker build -t $ECR_REGISTRY/${{ env.ANALYTICS_REPOSITORY }}:latest -f create_reports/Dockerfile create_reports
+          docker push $ECR_REGISTRY/${{ env.ANALYTICS_REPOSITORY }}:latest
+
+  deploy-infrastructure:
+    name: Deploy remaining infrastructure
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Download backup file
+        run: |
+          mkdir -p tmp 
+          cd tmp
+          curl -L -o AdventureWorks2022.bak "https://github.com/Microsoft/sql-server-samples/releases/download/adventureworks/AdventureWorks2022.bak"
+          cd ..
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        working-directory: ${{ env.TERRAFORM_WORKING_DIR }}
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ env.STATE_BUCKET }}" \
+            -backend-config="region=${{ env.AWS_REGION }}"
+
+      - name: Terraform Apply Full Infrastructure
+        working-directory: ${{ env.TERRAFORM_WORKING_DIR }}
+        run: terraform apply -auto-approve
+
+  run-workflow:
+    name: Run Database Workflow
+    needs: [deploy-infrastructure, build-and-push]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+      
+      - name: Terraform Init
+        working-directory: ${{ env.TERRAFORM_WORKING_DIR }}
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ env.STATE_BUCKET }}" \
+            -backend-config="region=${{ env.AWS_REGION }}"
+
+      - name: Get State Machine ARN
+        id: get-arn
+        working-directory: ${{ env.TERRAFORM_WORKING_DIR }}
+        run: |
+          ARN=$(terraform output -raw step_function_arn)
+          echo "state_machine_arn=$ARN" >> $GITHUB_OUTPUT
+
+      - name: Start Step Function Execution
+        run: |
+          aws stepfunctions start-execution \
+            --state-machine-arn "${{ steps.get-arn.outputs.state_machine_arn }}" \
+            --name "execution-$(date +%Y%m%d-%H%M%S)"
